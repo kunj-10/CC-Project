@@ -1,20 +1,8 @@
 const path = require('path');
 const { generateKey } = require('../utils/keyGenerator');
 
-/**
- * In-memory file metadata store.
- * Maps key -> { filename, path, uploadedAt }
- *
- * For demo purposes only — data is lost on restart,
- * but uploaded files remain on disk in the uploads/ directory.
- */
 const fileStore = new Map();
 
-/**
- * Save file metadata and generate a unique access key.
- * @param {object} file - The multer file object
- * @returns {{ key: string, filename: string }}
- */
 function saveFileMetadata(file) {
   const key = generateKey();
   const metadata = {
