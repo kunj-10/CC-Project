@@ -1,7 +1,6 @@
 const path = require('path');
 const { saveFileMetadata, getFileMetadata, getTotalFiles } = require('../services/storageService');
 
-// ── Metrics state ──────────────────────────────────────────────────────
 const metrics = {
   startTime: Date.now(),
   totalUploads: 0,
@@ -9,9 +8,6 @@ const metrics = {
   activeRequests: 0,
 };
 
-/**
- * Middleware: increment active request counter on entry, decrement on finish.
- */
 function trackActiveRequests(req, res, next) {
   metrics.activeRequests++;
   res.on('finish', () => {
@@ -20,13 +16,7 @@ function trackActiveRequests(req, res, next) {
   next();
 }
 
-// ── Controllers ────────────────────────────────────────────────────────
 
-/**
- * POST /upload
- * Accepts multipart/form-data with field name "file".
- * Returns the generated access key and original filename.
- */
 function uploadFile(req, res, next) {
   try {
     if (!req.file) {

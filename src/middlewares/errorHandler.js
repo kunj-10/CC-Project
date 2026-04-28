@@ -1,12 +1,7 @@
-/**
- * Global error-handling middleware for Express.
- * Catches all unhandled errors and returns a consistent JSON response.
- */
 function errorHandler(err, req, res, next) {
   console.error(`[ERROR] ${err.message}`);
   console.error(err.stack);
 
-  // Handle multer-specific errors
   if (err.code === 'LIMIT_FILE_SIZE') {
     return res.status(413).json({
       error: 'File too large',
