@@ -1,5 +1,7 @@
 const path = require('path');
+const fs = require('fs');
 const { saveFileMetadata, getFileMetadata, getTotalFiles } = require('../services/storageService');
+const { decryptBuffer } = require('../utils/encryption');
 
 const metrics = {
   startTime: Date.now(),
@@ -26,7 +28,7 @@ function uploadFile(req, res, next) {
     const { key, filename } = saveFileMetadata(req.file);
     metrics.totalUploads++;
 
-    console.log(`[UPLOAD] key=${key}  file=${filename}`);
+    console.log(`[UPLOAD] key=${key}  file=${filename}  (encrypted on disk)`);
     res.status(201).json({ key, filename });
   } catch (err) {
     next(err);
@@ -35,7 +37,7 @@ function uploadFile(req, res, next) {
 
 /**
  * GET /download?key=...
- * Validates the key, locates the file, and streams it back to the client.
+ * Validates the key, decrypts the file using the key, and sends back the decrypted content.
  */
 function downloadFile(req, res, next) {
   try {
@@ -52,10 +54,17 @@ function downloadFile(req, res, next) {
 
     metrics.totalDownloads++;
 
-    console.log(`[DOWNLOAD] key=${key}  file=${metadata.filename}`);
-    res.download(path.resolve(metadata.path), metadata.filename, (err) => {
-      if (err) next(err);
-    });
+    // Read encrypted file from disk and decrypt it using the key
+    const encryptedData = fs.readFileSync(path.resolve(metadata.path));
+    const decryptedData = decryptBuffer(encryptedData, key);
+
+    console.log(`[DOWNLOAD] key=${key}  file=${metadata.filename}  (decrypted)`);
+
+    // Send decrypted file as a download
+    res.setHeader('Content-Disposition', `attachment; filename="${metadata.filename}"`);
+    res.setHeader('Content-Type', metadata.mimetype || 'application/octet-stream');
+    res.setHeader('Content-Length', decryptedData.length);
+    res.send(decryptedData);
   } catch (err) {
     next(err);
   }
