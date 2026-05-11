@@ -21,7 +21,7 @@ app.use('/', fileRoutes);
 
 app.use(errorHandler);
 
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`\n========================================`);
   console.log(`  P2V2C File Sharing Service`);
   console.log(`  Running on http://localhost:${PORT}`);
